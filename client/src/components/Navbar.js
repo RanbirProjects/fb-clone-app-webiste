@@ -1,231 +1,196 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  AppBar,
-  Box,
-  Toolbar,
-  IconButton,
-  Typography,
-  Menu,
-  Container,
-  Avatar,
-  Button,
-  Tooltip,
-  MenuItem,
-  InputBase,
-} from '@mui/material';
-import {
-  Menu as MenuIcon,
-  Search as SearchIcon,
-  Notifications as NotificationsIcon,
-  Settings as SettingsIcon,
-} from '@mui/icons-material';
-import { styled, alpha } from '@mui/material/styles';
-import { setLogout } from '../state/authSlice';
-
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: 'auto',
-  },
-}));
-
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: 'inherit',
-  '& .MuiInputBase-input': {
-    padding: theme.spacing(1, 1, 1, 0),
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create('width'),
-    width: '100%',
-    [theme.breakpoints.up('md')]: {
-      width: '20ch',
-    },
-  },
-}));
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import './Navbar.css';
 
 const Navbar = () => {
-  const [anchorElNav, setAnchorElNav] = useState(null);
-  const [anchorElUser, setAnchorElUser] = useState(null);
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const user = useSelector((state) => state.user);
-  const isAuth = Boolean(useSelector((state) => state.token));
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
+  const location = useLocation();
 
-  const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
-  };
-  const handleOpenUserMenu = (event) => {
-    setAnchorElUser(event.currentTarget);
-  };
+  const notifications = [
+    {
+      id: 1,
+      type: 'like',
+      user: 'John Doe',
+      content: 'liked your post',
+      time: '5m ago',
+      image: 'https://source.unsplash.com/random/40x40?portrait=1'
+    },
+    {
+      id: 2,
+      type: 'comment',
+      user: 'Jane Smith',
+      content: 'commented on your photo',
+      time: '1h ago',
+      image: 'https://source.unsplash.com/random/40x40?portrait=2'
+    },
+    {
+      id: 3,
+      type: 'friend',
+      user: 'Mike Johnson',
+      content: 'sent you a friend request',
+      time: '2h ago',
+      image: 'https://source.unsplash.com/random/40x40?portrait=3'
+    }
+  ];
 
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
-
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
-
-  const handleLogout = () => {
-    dispatch(setLogout());
-    navigate('/login');
-  };
+  const messages = [
+    {
+      id: 1,
+      user: 'Sarah Wilson',
+      lastMessage: 'Hey, how are you?',
+      time: '5m ago',
+      unread: true,
+      image: 'https://source.unsplash.com/random/40x40?portrait=4'
+    },
+    {
+      id: 2,
+      user: 'David Brown',
+      lastMessage: 'See you tomorrow!',
+      time: '1h ago',
+      unread: false,
+      image: 'https://source.unsplash.com/random/40x40?portrait=5'
+    },
+    {
+      id: 3,
+      user: 'Emily Davis',
+      lastMessage: 'Thanks for the help!',
+      time: '2h ago',
+      unread: true,
+      image: 'https://source.unsplash.com/random/40x40?portrait=6'
+    }
+  ];
 
   return (
-    <AppBar position="static">
-      <Container maxWidth="xl">
-        <Toolbar disableGutters>
-          <Typography
-            variant="h6"
-            noWrap
-            component="a"
-            href="/"
-            sx={{
-              mr: 2,
-              display: { xs: 'none', md: 'flex' },
-              fontWeight: 700,
-              color: 'inherit',
-              textDecoration: 'none',
-            }}
-          >
-            Facebook Clone
-          </Typography>
+    <nav className="navbar">
+      <div className="navbar-container">
+        <div className="navbar-left">
+          <Link to="/" className="logo">
+            <i className="fab fa-facebook"></i>
+          </Link>
+          <div className="search-container">
+            <i className="fas fa-search"></i>
+            <input type="text" placeholder="Search Facebook" />
+          </div>
+        </div>
 
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
-              color="inherit"
+        <div className="navbar-center">
+          <Link to="/" className={`nav-icon ${location.pathname === '/' ? 'active' : ''}`}>
+            <i className="fas fa-home"></i>
+          </Link>
+          <Link to="/watch" className={`nav-icon ${location.pathname === '/watch' ? 'active' : ''}`}>
+            <i className="fas fa-tv"></i>
+          </Link>
+          <Link to="/marketplace" className={`nav-icon ${location.pathname === '/marketplace' ? 'active' : ''}`}>
+            <i className="fas fa-store"></i>
+          </Link>
+          <Link to="/groups" className={`nav-icon ${location.pathname === '/groups' ? 'active' : ''}`}>
+            <i className="fas fa-users"></i>
+          </Link>
+          <Link to="/gaming" className="nav-icon">
+            <i className="fas fa-gamepad"></i>
+          </Link>
+        </div>
+
+        <div className="navbar-right">
+          <div className="nav-icons">
+            <button className="nav-icon">
+              <i className="fas fa-plus"></i>
+            </button>
+            <button className="nav-icon">
+              <i className="fab fa-facebook-messenger"></i>
+            </button>
+            <button 
+              className="nav-icon"
+              onClick={() => {
+                setShowNotifications(!showNotifications);
+                setShowMessages(false);
+              }}
             >
-              <MenuIcon />
-            </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{
-                display: { xs: 'block', md: 'none' },
-              }}
-            >
-              {isAuth && (
-                <MenuItem onClick={() => navigate('/')}>
-                  <Typography textAlign="center">Home</Typography>
-                </MenuItem>
+              <i className="fas fa-bell"></i>
+              {showNotifications && (
+                <div className="dropdown-menu notifications">
+                  <div className="dropdown-header">
+                    <h3>Notifications</h3>
+                    <button>Mark all as read</button>
+                  </div>
+                  {notifications.map(notification => (
+                    <div key={notification.id} className="dropdown-item">
+                      <img src={notification.image} alt={notification.user} />
+                      <div className="item-content">
+                        <p>
+                          <strong>{notification.user}</strong> {notification.content}
+                        </p>
+                        <span className="time">{notification.time}</span>
+                      </div>
+                    </div>
+                  ))}
+                  <button className="see-all">See All Notifications</button>
+                </div>
               )}
-            </Menu>
-          </Box>
+            </button>
+            <button 
+              className="nav-icon"
+              onClick={() => {
+                setShowMessages(!showMessages);
+                setShowNotifications(false);
+              }}
+            >
+              <i className="fas fa-comment-dots"></i>
+              {showMessages && (
+                <div className="dropdown-menu messages">
+                  <div className="dropdown-header">
+                    <h3>Messages</h3>
+                    <button>New Message</button>
+                  </div>
+                  {messages.map(message => (
+                    <div key={message.id} className="dropdown-item">
+                      <img src={message.image} alt={message.user} />
+                      <div className="item-content">
+                        <p>
+                          <strong>{message.user}</strong>
+                          <span className="message">{message.lastMessage}</span>
+                        </p>
+                        <span className="time">{message.time}</span>
+                      </div>
+                      {message.unread && <span className="unread-badge"></span>}
+                    </div>
+                  ))}
+                  <button className="see-all">See All Messages</button>
+                </div>
+              )}
+            </button>
+          </div>
 
-          <Typography
-            variant="h5"
-            noWrap
-            component="a"
-            href="/"
-            sx={{
-              mr: 2,
-              display: { xs: 'flex', md: 'none' },
-              flexGrow: 1,
-              fontWeight: 700,
-              color: 'inherit',
-              textDecoration: 'none',
-            }}
-          >
-            Facebook Clone
-          </Typography>
-
-          {isAuth && (
-            <Search>
-              <SearchIconWrapper>
-                <SearchIcon />
-              </SearchIconWrapper>
-              <StyledInputBase
-                placeholder="Search…"
-                inputProps={{ 'aria-label': 'search' }}
-              />
-            </Search>
-          )}
-
-          <Box sx={{ flexGrow: 0 }}>
-            {isAuth ? (
-              <>
-                <IconButton color="inherit">
-                  <NotificationsIcon />
-                </IconButton>
-                <Tooltip title="Open settings">
-                  <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                    <Avatar alt={user?.firstName} src={user?.profilePicture} />
-                  </IconButton>
-                </Tooltip>
-                <Menu
-                  sx={{ mt: '45px' }}
-                  id="menu-appbar"
-                  anchorEl={anchorElUser}
-                  anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                  keepMounted
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                  open={Boolean(anchorElUser)}
-                  onClose={handleCloseUserMenu}
-                >
-                  <MenuItem onClick={() => navigate(`/profile/${user._id}`)}>
-                    <Typography textAlign="center">Profile</Typography>
-                  </MenuItem>
-                  <MenuItem onClick={handleLogout}>
-                    <Typography textAlign="center">Logout</Typography>
-                  </MenuItem>
-                </Menu>
-              </>
-            ) : (
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <Button color="inherit" onClick={() => navigate('/login')}>
-                  Login
-                </Button>
-                <Button color="inherit" onClick={() => navigate('/register')}>
-                  Register
-                </Button>
-              </Box>
+          <div className="profile-menu">
+            <button 
+              className="profile-button"
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+            >
+              <img src="https://source.unsplash.com/random/40x40?portrait=7" alt="Profile" />
+              <span>Your Name</span>
+            </button>
+            {showProfileMenu && (
+              <div className="dropdown-menu profile">
+                <Link to="/profile">
+                  <i className="fas fa-user"></i>
+                  <span>Profile</span>
+                </Link>
+                <Link to="/settings">
+                  <i className="fas fa-cog"></i>
+                  <span>Settings</span>
+                </Link>
+                <button className="logout">
+                  <i className="fas fa-sign-out-alt"></i>
+                  <span>Logout</span>
+                </button>
+              </div>
             )}
-          </Box>
-        </Toolbar>
-      </Container>
-    </AppBar>
+          </div>
+        </div>
+      </div>
+    </nav>
   );
 };
 

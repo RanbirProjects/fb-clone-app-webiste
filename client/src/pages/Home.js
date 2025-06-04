@@ -1,236 +1,216 @@
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  Box,
-  Container,
-  Grid,
-  Paper,
-  Typography,
-  TextField,
-  Button,
-  IconButton,
-  Divider,
-  Avatar,
-} from '@mui/material';
-import {
-  ThumbUp as ThumbUpIcon,
-  ThumbUpOutlined as ThumbUpOutlinedIcon,
-  ChatBubbleOutline as ChatBubbleOutlineIcon,
-  Share as ShareIcon,
-} from '@mui/icons-material';
-import { useDropzone } from 'react-dropzone';
-import { setPosts, likePost, addComment } from '../state/postsSlice';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { images } from '../assets/images';
+import './Home.css';
 
 const Home = () => {
-  const dispatch = useDispatch();
-  const posts = useSelector((state) => state.posts);
-  const user = useSelector((state) => state.user);
-  const [newPost, setNewPost] = useState('');
-  const [picturePath, setPicturePath] = useState('');
-  const [comment, setComment] = useState('');
-  const [selectedPost, setSelectedPost] = useState(null);
+  const [postContent, setPostContent] = useState('');
+  const [posts, setPosts] = useState([]);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showImageUpload, setShowImageUpload] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: {
-      'image/*': ['.jpeg', '.jpg', '.png']
-    },
-    maxFiles: 1,
-    onDrop: async (acceptedFiles) => {
-      const formData = new FormData();
-      formData.append('picture', acceptedFiles[0]);
-      try {
-        const response = await axios.post('http://localhost:5000/api/upload', formData);
-        setPicturePath(response.data.picturePath);
-      } catch (error) {
-        console.error('Error uploading image:', error);
-      }
-    }
-  });
-
-  const fetchPosts = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/api/posts/feed', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      dispatch(setPosts(response.data));
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-    }
-  };
+  const stories = [
+    { id: 1, user: 'John Doe', image: images.stories.story1, profilePic: images.profiles.user1 },
+    { id: 2, user: 'Jane Smith', image: images.stories.story2, profilePic: images.profiles.user2 },
+    { id: 3, user: 'Mike Johnson', image: images.stories.story3, profilePic: images.profiles.user3 },
+    { id: 4, user: 'Sarah Wilson', image: images.stories.story4, profilePic: images.profiles.user4 },
+  ];
 
   useEffect(() => {
     fetchPosts();
   }, []);
 
-  const handlePost = async () => {
+  const fetchPosts = async () => {
     try {
-      const response = await axios.post(
-        'http://localhost:5000/api/posts',
-        {
-          description: newPost,
-          picturePath,
+      const response = await axios.get('http://localhost:5001/api/posts');
+      setPosts(response.data);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+    }
+  };
+
+  const handlePost = async (e) => {
+    e.preventDefault();
+    if (!postContent.trim() && !selectedImage) return;
+
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('content', postContent);
+      formData.append('user', 'You');
+      formData.append('userImage', images.profiles.user1);
+      
+      if (selectedImage) {
+        // Convert base64 to blob
+        const response = await fetch(selectedImage);
+        const blob = await response.blob();
+        formData.append('image', blob, 'image.jpg');
+      }
+
+      const response = await axios.post('http://localhost:5001/api/posts', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
         },
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        }
-      );
-      dispatch(setPosts([response.data, ...posts]));
-      setNewPost('');
-      setPicturePath('');
+      });
+
+      setPosts([response.data, ...posts]);
+      setPostContent('');
+      setSelectedImage(null);
+      setShowImageUpload(false);
     } catch (error) {
       console.error('Error creating post:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const handleLike = async (postId) => {
     try {
-      await axios.patch(
-        `http://localhost:5000/api/posts/${postId}/like`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        }
-      );
-      dispatch(likePost({ postId, userId: user._id }));
+      const response = await axios.post(`http://localhost:5001/api/posts/${postId}/like`);
+      setPosts(posts.map(post => 
+        post.id === postId ? response.data : post
+      ));
     } catch (error) {
       console.error('Error liking post:', error);
     }
   };
 
-  const handleComment = async (postId) => {
-    try {
-      const response = await axios.post(
-        `http://localhost:5000/api/posts/${postId}/comment`,
-        { text: comment },
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        }
-      );
-      dispatch(addComment({ postId, comment: response.data.comments[response.data.comments.length - 1] }));
-      setComment('');
-      setSelectedPost(null);
-    } catch (error) {
-      console.error('Error adding comment:', error);
-    }
-  };
-
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 3, mb: 3 }}>
-            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-              <Avatar src={user?.profilePicture} alt={user?.firstName} />
-              <TextField
-                fullWidth
-                multiline
-                rows={2}
-                placeholder="What's on your mind?"
-                value={newPost}
-                onChange={(e) => setNewPost(e.target.value)}
-              />
-            </Box>
-            <Box
-              {...getRootProps()}
-              sx={{
-                border: '2px dashed #ccc',
-                borderRadius: 2,
-                p: 2,
-                textAlign: 'center',
-                cursor: 'pointer',
-                mb: 2,
-              }}
-            >
-              <input {...getInputProps()} />
-              <Typography>
-                {picturePath ? 'Image uploaded' : 'Drop an image here or click to select'}
-              </Typography>
-            </Box>
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={handlePost}
-              disabled={!newPost && !picturePath}
-            >
-              Post
-            </Button>
-          </Paper>
+    <div className="home">
+      <div className="stories-container">
+        <div className="create-story">
+          <img src={images.stories.story1} alt="Your story" />
+          <div className="create-story-overlay">
+            <i className="fas fa-plus"></i>
+            <span>Create Story</span>
+          </div>
+        </div>
+        {stories.map(story => (
+          <div key={story.id} className="story">
+            <img src={story.image} alt={story.user} />
+            <div className="story-overlay">
+              <img src={story.profilePic} alt={story.user} className="story-avatar" />
+              <span>{story.user}</span>
+            </div>
+          </div>
+        ))}
+      </div>
 
-          {posts.map((post) => (
-            <Paper key={post._id} sx={{ p: 3, mb: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar src={post.userId.profilePicture} alt={post.userId.firstName} />
-                <Box sx={{ ml: 2 }}>
-                  <Typography variant="subtitle1">
-                    {post.userId.firstName} {post.userId.lastName}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {new Date(post.createdAt).toLocaleDateString()}
-                  </Typography>
-                </Box>
-              </Box>
-              <Typography sx={{ mb: 2 }}>{post.description}</Typography>
-              {post.picturePath && (
-                <Box
-                  component="img"
-                  src={post.picturePath}
-                  alt="Post"
-                  sx={{ width: '100%', borderRadius: 2, mb: 2 }}
-                />
-              )}
-              <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                <IconButton onClick={() => handleLike(post._id)}>
-                  {post.likes.includes(user._id) ? (
-                    <ThumbUpIcon color="primary" />
-                  ) : (
-                    <ThumbUpOutlinedIcon />
-                  )}
-                </IconButton>
-                <IconButton onClick={() => setSelectedPost(selectedPost === post._id ? null : post._id)}>
-                  <ChatBubbleOutlineIcon />
-                </IconButton>
-                <IconButton>
-                  <ShareIcon />
-                </IconButton>
-              </Box>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                {post.likes.length} likes
-              </Typography>
-              <Divider sx={{ my: 2 }} />
-              {selectedPost === post._id && (
-                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                  <TextField
-                    fullWidth
-                    placeholder="Write a comment..."
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                  />
-                  <Button
-                    variant="contained"
-                    onClick={() => handleComment(post._id)}
-                    disabled={!comment}
-                  >
-                    Comment
-                  </Button>
-                </Box>
-              )}
-              {post.comments.map((comment, index) => (
-                <Box key={index} sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                  <Avatar src={comment.userId.profilePicture} alt={comment.userId.firstName} />
-                  <Box>
-                    <Typography variant="subtitle2">
-                      {comment.userId.firstName} {comment.userId.lastName}
-                    </Typography>
-                    <Typography variant="body2">{comment.text}</Typography>
-                  </Box>
-                </Box>
-              ))}
-            </Paper>
-          ))}
-        </Grid>
-      </Grid>
-    </Container>
+      <div className="create-post">
+        <div className="create-post-top">
+          <img src={images.profiles.user1} alt="Your profile" />
+          <input
+            type="text"
+            placeholder="What's on your mind?"
+            value={postContent}
+            onChange={(e) => setPostContent(e.target.value)}
+          />
+        </div>
+        {selectedImage && (
+          <div className="selected-image-preview">
+            <img src={selectedImage} alt="Selected" />
+            <button onClick={() => setSelectedImage(null)}>
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+        )}
+        <div className="create-post-bottom">
+          <button className="post-option" onClick={() => setShowImageUpload(true)}>
+            <i className="fas fa-images"></i>
+            <span>Photo/Video</span>
+          </button>
+          <button className="post-option">
+            <i className="fas fa-video"></i>
+            <span>Live Video</span>
+          </button>
+          <button className="post-option" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
+            <i className="fas fa-smile"></i>
+            <span>Feeling/Activity</span>
+          </button>
+          <button 
+            className="post-button" 
+            onClick={handlePost}
+            disabled={isLoading || (!postContent.trim() && !selectedImage)}
+          >
+            {isLoading ? 'Posting...' : 'Post'}
+          </button>
+        </div>
+        {showImageUpload && (
+          <div className="image-upload-overlay">
+            <div className="image-upload-content">
+              <h3>Add Photo/Video</h3>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                style={{ display: 'none' }}
+                id="image-upload"
+              />
+              <label htmlFor="image-upload" className="upload-button">
+                <i className="fas fa-upload"></i>
+                <span>Upload Photo</span>
+              </label>
+              <button onClick={() => setShowImageUpload(false)}>Cancel</button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {posts.map(post => (
+        <div key={post.id} className="post">
+          <div className="post-header">
+            <img src={post.userImage} alt={post.user} />
+            <div className="post-info">
+              <h3>{post.user}</h3>
+              <span>{post.time}</span>
+            </div>
+            <button className="post-menu">
+              <i className="fas fa-ellipsis-h"></i>
+            </button>
+          </div>
+          <div className="post-content">
+            <p>{post.content}</p>
+            {post.image && <img src={post.image} alt="Post content" />}
+          </div>
+          <div className="post-stats">
+            <div className="post-stat">
+              <i className="fas fa-thumbs-up"></i>
+              <span>{post.likes}</span>
+            </div>
+            <div className="post-stat">
+              <span>{post.comments.length} comments</span>
+            </div>
+          </div>
+          <div className="post-actions">
+            <button className="post-action" onClick={() => handleLike(post.id)}>
+              <i className="fas fa-thumbs-up"></i>
+              <span>Like</span>
+            </button>
+            <button className="post-action">
+              <i className="fas fa-comment"></i>
+              <span>Comment</span>
+            </button>
+            <button className="post-action">
+              <i className="fas fa-share"></i>
+              <span>Share</span>
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 };
 

@@ -1,29 +1,29 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, CssBaseline } from '@mui/material';
-import { useSelector } from 'react-redux';
-import { theme } from './theme';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import './App.css';
+
+// Components
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Profile from './pages/Profile';
+import Watch from './pages/Watch';
+import Marketplace from './pages/Marketplace';
+import Groups from './pages/Groups';
 
 function App() {
-  const isAuth = Boolean(useSelector((state) => state.token));
-
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Router>
+    <Router>
+      <div className="app">
         <Navbar />
-        <Routes>
-          <Route path="/" element={isAuth ? <Home /> : <Navigate to="/login" />} />
-          <Route path="/login" element={!isAuth ? <Login /> : <Navigate to="/" />} />
-          <Route path="/register" element={!isAuth ? <Register /> : <Navigate to="/" />} />
-          <Route path="/profile/:userId" element={isAuth ? <Profile /> : <Navigate to="/login" />} />
-        </Routes>
-      </Router>
-    </ThemeProvider>
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/watch" element={<Watch />} />
+            <Route path="/marketplace" element={<Marketplace />} />
+            <Route path="/groups" element={<Groups />} />
+          </Routes>
+        </main>
+      </div>
+    </Router>
   );
 }
 

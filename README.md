@@ -1,82 +1,58 @@
-# Facebook Clone
+# MERN Stack Application
 
-A full-stack Facebook clone built with the MERN stack (MongoDB, Express.js, React.js, Node.js).
+A modern web application built with the MERN stack (MongoDB, Express.js, React.js, Node.js).
 
 ## Features
 
-- User Authentication (Signup, Login, Logout)
-- News Feed
-- Create/Edit/Delete Posts
-- Like and Comment System
-- Friend System
-- Profile Pages
-- Real-time Notifications
+- Modern and responsive UI
+- Client-side routing with React Router
+- RESTful API with Express.js
+- MongoDB database integration
+- JWT authentication
+- Contact form with form validation
 
-## Tech Stack
-
-- **Frontend**: React.js, Redux Toolkit, Material-UI
-- **Backend**: Node.js, Express.js
-- **Database**: MongoDB
-- **Real-time**: Socket.io
-- **Authentication**: JWT
-- **File Storage**: Cloudinary
-
-## Project Structure
-
-```
-facebook-clone/
-├── client/                 # React frontend
-├── server/                 # Node.js backend
-├── .gitignore
-└── README.md
-```
-
-## Setup Instructions
-
-### Prerequisites
+## Prerequisites
 
 - Node.js (v14 or higher)
-- MongoDB
-- npm or yarn
+- MongoDB (local installation or MongoDB Atlas account)
+- npm or yarn package manager
 
-### Installation
+## Installation
 
-1. Clone the repository
+1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd facebook-clone
+cd mern-app
 ```
 
-2. Install backend dependencies
+2. Install server dependencies:
 ```bash
 cd server
 npm install
 ```
 
-3. Install frontend dependencies
+3. Install client dependencies:
 ```bash
 cd ../client
 npm install
 ```
 
-4. Create a .env file in the server directory with the following variables:
+4. Create a `.env` file in the server directory with the following variables:
 ```
-MONGODB_URI=your_mongodb_uri
+MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
-CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
-CLOUDINARY_API_KEY=your_cloudinary_api_key
-CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+PORT=5000
 ```
 
-5. Start the development servers
+## Running the Application
 
-Backend:
+1. Start the server:
 ```bash
 cd server
 npm run dev
 ```
 
-Frontend:
+2. Start the client:
 ```bash
 cd client
 npm start
@@ -84,12 +60,48 @@ npm start
 
 The application will be available at:
 - Frontend: http://localhost:3000
-- Backend: http://localhost:5000
+- Backend API: http://localhost:5000
+
+## Project Structure
+
+```
+mern-app/
+├── client/                 # React frontend
+│   ├── public/            # Static files
+│   └── src/               # React source files
+│       ├── components/    # Reusable components
+│       ├── pages/         # Page components
+│       └── App.js         # Main App component
+├── server/                # Express backend
+│   ├── models/           # MongoDB models
+│   ├── routes/           # API routes
+│   └── server.js         # Server entry point
+└── README.md             # Project documentation
+```
+
+## Technologies Used
+
+- Frontend:
+  - React.js
+  - React Router
+  - CSS3
+  - Axios
+
+- Backend:
+  - Node.js
+  - Express.js
+  - MongoDB
+  - Mongoose
+  - JWT
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a new Pull Request 
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License. 
