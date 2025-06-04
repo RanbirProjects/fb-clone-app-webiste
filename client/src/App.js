@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 
 // Components
@@ -11,7 +11,7 @@ import Groups from './pages/Groups';
 
 function App() {
   return (
-    <Router>
+    <Router basename="/">
       <div className="app">
         <Navbar />
         <main className="main-content">
@@ -20,6 +20,8 @@ function App() {
             <Route path="/watch" element={<Watch />} />
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/groups" element={<Groups />} />
+            <Route path="/404" element={<div>Page Not Found</div>} />
+            <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>
         </main>
       </div>
